@@ -93,9 +93,6 @@ app.get('/api/score', async (_req, res) => {
 })
 
 app.post('/api/score', async (req, res) => {
-  // @ts-ignore
-  console.log(req.header('Authorization').split(' ')[1]);
-
   if (req.header('Authorization')){
     try {
       const decoded = jwt.verify((req.header('Authorization') as string).split(' ')[1], process.env.API_TOKEN as string);
