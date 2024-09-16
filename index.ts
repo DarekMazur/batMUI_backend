@@ -7,7 +7,7 @@ dotenv.config()
 
 import {pool} from "./client";
 import {IScoreTypes} from "./lib/types";
-import {SCORES_TO_DISPLAY} from "./lib/vars";
+import {SCORES_TO_DISPLAY, TOKEN_EXPIRATION_TIME} from "./lib/vars";
 import jwt from 'jsonwebtoken'
 
 const app = express();
@@ -53,7 +53,7 @@ const getScores = async () => {
 getScores();
 
 const generateAccessToken = (login: { login: string }) => {
-  return jwt.sign(login, process.env.API_TOKEN as string, { expiresIn: '20s' });
+  return jwt.sign(login, process.env.API_TOKEN as string, { expiresIn: TOKEN_EXPIRATION_TIME });
 }
 
 const getFromDatabase = async (table: string, res: Response) => {
@@ -102,20 +102,38 @@ app.post('/api/score', async (req, res) => {
       if (signed !== process.env.API_USER as string) {
         res.status(401).send('Authentication failed').end();
       } else {
-        const newScore: IScoreTypes = {
-          username: req.body.username,
-          score: req.body.score,
-          time: req.body.time,
-          level: req.body.level,
-        };
-
-        if (newScore.score < SCORES_TO_DISPLAY || req.body.score >= bestScores.sort((a, b) => a.score - b.score)[bestScores.length - 1] ) {
-          if (req.body.score === bestScores.sort((a, b) => a.score - b.score)[bestScores.length - 1] && req.body.time < bestScores.sort((a, b) => a.score - b.score)[bestScores.length - 1].time) {
+        if (bestScores.length >= SCORES_TO_DISPLAY && req.body.score < bestScores.sort((a, b) => b.score - a.score)[bestScores.length - 1].score)  {
+          console.log('The result is too low to be on the list of the best scores');
+          res.status(403).send('The result is too low to be on the list of the best scores');
+        } else if (bestScores.length >= SCORES_TO_DISPLAY && req.body.score === bestScores.sort((a, b) => b.score - a.score)[bestScores.length - 1] && req.body.time <= bestScores.sort((a, b) => b.score - a.score)[bestScores.length - 1].time) {
+          console.log('The result is too low to be on the list of the best scores');
+          res.status(403).send('The result is too low to be on the list of the best scores');
+        } else {
+          const newScore: IScoreTypes = {
+            username: req.body.username,
+            score: req.body.score,
+            time: req.body.time,
+            level: req.body.level,
+          };
             bestScores.push(newScore);
+
+            const lowestScoreOnList = bestScores.sort((a, b) => {
+              if (a.score < b.score) {
+                return 1;
+              } else if (a.score > b.score) {
+                return -1
+              }
+
+              return a.time - b.time;
+            })[bestScores.length - 1]
 
             const client = await pool.connect()
             if (client) {
               console.log('Connected to database');
+              console.log(lowestScoreOnList.id)
+              await client.query(`DELETE FROM results WHERE id=($1)::uuid`, [
+                lowestScoreOnList.id
+              ])
               await client.query(`INSERT INTO results (username, score, level, time) VALUES ('${newScore.username}', '${newScore.score}', '${newScore.level}', '${newScore.time}') ON CONFLICT DO NOTHING;`)
                 .then(() => {
                   res.status(200).send(newScore).end();
@@ -130,13 +148,6 @@ app.post('/api/score', async (req, res) => {
             } else {
               res.status(500).send('Connection failed');
             }
-          } else {
-            console.log('The result is too low to be on the list of the best scores');
-            res.status(403).send('The result is too low to be on the list of the best scores');
-          }
-        } else {
-          console.log('The result is too low to be on the list of the best scores');
-          res.status(403).send('The result is too low to be on the list of the best scores');
         }
       }
     } catch(err) {
