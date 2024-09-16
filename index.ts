@@ -1,4 +1,4 @@
-import express from "express";
+import express, {Response} from "express";
 import cors from "cors";
 import * as process from "node:process";
 require('dotenv').config()
@@ -32,11 +32,11 @@ app.get('/api', (_req, res) => {
   res.status(204).send('Nothing to send');
 })
 
-app.get('/api/questions', async (_req, res) => {
+const getFromDatabase = async (table: string, res: Response) => {
   const client = await pool.connect()
   if (client) {
     console.log('Connected to database');
-    const result = await client.query('SELECT * FROM questions');
+    const result = await client.query(`SELECT * FROM ${table}`);
     if (result !== undefined) {
       res.status(200).send(result.rows);
       console.log('Results sent')
@@ -48,24 +48,14 @@ app.get('/api/questions', async (_req, res) => {
   } else {
     res.status(500).send('Connection failed');
   }
+}
+
+app.get('/api/questions', async (_req, res) => {
+  getFromDatabase('questions', res)
 })
 
 app.get('/api/score', async (_req, res) => {
-  const client = await pool.connect()
-  if (client) {
-    console.log('Connected to database');
-    const result = await client.query('SELECT * FROM results');
-    if (result !== undefined) {
-      res.status(200).send(result.rows);
-      console.log('Results sent')
-      client.release()
-      console.log('Client released');
-    } else {
-      res.status(400).send('No such results');
-    }
-  } else {
-    res.status(500).send('Connection failed');
-  }
+  getFromDatabase('results', res)
 })
 
 app.listen(port, () => {
