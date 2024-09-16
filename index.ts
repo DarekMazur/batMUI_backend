@@ -109,25 +109,30 @@ app.post('/api/score', async (req, res) => {
           level: req.body.level,
         };
 
-        if (newScore.score < SCORES_TO_DISPLAY || req.body.score > bestScores.sort((a, b) => a.score - b.score)[bestScores.length - 1] ) {
-          bestScores.push(newScore);
+        if (newScore.score < SCORES_TO_DISPLAY || req.body.score >= bestScores.sort((a, b) => a.score - b.score)[bestScores.length - 1] ) {
+          if (req.body.score === bestScores.sort((a, b) => a.score - b.score)[bestScores.length - 1] && req.body.time < bestScores.sort((a, b) => a.score - b.score)[bestScores.length - 1].time) {
+            bestScores.push(newScore);
 
-          const client = await pool.connect()
-          if (client) {
-            console.log('Connected to database');
-            await client.query(`INSERT INTO results (username, score, level, time) VALUES ('${newScore.username}', '${newScore.score}', '${newScore.level}', '${newScore.time}') ON CONFLICT DO NOTHING;`)
-              .then(() => {
-                res.status(200).send(newScore).end();
-                console.log('New score sent to database');
-                client.release()
-                console.log('Client released');
-              })
-              .catch((err) => {
-                res.status(500).send('Sending error');
-                console.error('Sending error' + err);
-              })
+            const client = await pool.connect()
+            if (client) {
+              console.log('Connected to database');
+              await client.query(`INSERT INTO results (username, score, level, time) VALUES ('${newScore.username}', '${newScore.score}', '${newScore.level}', '${newScore.time}') ON CONFLICT DO NOTHING;`)
+                .then(() => {
+                  res.status(200).send(newScore).end();
+                  console.log('New score sent to database');
+                  client.release()
+                  console.log('Client released');
+                })
+                .catch((err) => {
+                  res.status(500).send('Sending error');
+                  console.error('Sending error' + err);
+                })
+            } else {
+              res.status(500).send('Connection failed');
+            }
           } else {
-            res.status(500).send('Connection failed');
+            console.log('The result is too low to be on the list of the best scores');
+            res.status(403).send('The result is too low to be on the list of the best scores');
           }
         } else {
           console.log('The result is too low to be on the list of the best scores');
