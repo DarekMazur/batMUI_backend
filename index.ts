@@ -105,6 +105,7 @@ app.post('/api/score', async (req, res) => {
         const newScore: IScoreTypes = {
           username: req.body.username,
           score: req.body.score,
+          time: req.body.time,
           level: req.body.level,
         };
 
@@ -114,7 +115,7 @@ app.post('/api/score', async (req, res) => {
           const client = await pool.connect()
           if (client) {
             console.log('Connected to database');
-            await client.query(`INSERT INTO results (username, score, level) VALUES ('${newScore.username}', '${newScore.score}', '${newScore.level}') ON CONFLICT DO NOTHING;`)
+            await client.query(`INSERT INTO results (username, score, level, time) VALUES ('${newScore.username}', '${newScore.score}', '${newScore.level}', '${newScore.time}') ON CONFLICT DO NOTHING;`)
               .then(() => {
                 res.status(200).send(newScore).end();
                 console.log('New score sent to database');
