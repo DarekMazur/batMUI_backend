@@ -16,6 +16,12 @@ const corsOptions = {
 app.use(express.json());
 app.use(cors(corsOptions));
 
+interface IScoreTypes {
+  username: string;
+  score: number;
+  level: string;
+}
+
 export const pool = new Pool({
   user: process.env.DATABASE_USER || 'postgres',
   host: process.env.DATABASE_HOST || 'localhost',
@@ -31,6 +37,28 @@ app.get('/', (_req, res) => {
 app.get('/api', (_req, res) => {
   res.status(204).send('Nothing to send');
 })
+
+const bestScores: IScoreTypes[] = []
+const getScores = async () => {
+  const client = await pool.connect()
+  if (client) {
+    console.log('Connected to database');
+    const result = await client.query('SELECT * FROM results');
+    if (result !== undefined) {
+      result.rows.forEach((row) => {
+        bestScores.push(row);
+      });
+      client.release()
+      console.log('Client released');
+    } else {
+      console.error('Cannot get results from database');
+    }
+  } else {
+    console.error('Connection failed');
+  }
+}
+
+getScores();
 
 const getFromDatabase = async (table: string, res: Response) => {
   const client = await pool.connect()
@@ -56,6 +84,34 @@ app.get('/api/questions', async (_req, res) => {
 
 app.get('/api/score', async (_req, res) => {
   getFromDatabase('results', res)
+})
+
+app.post('/api/score', async (req, res) => {
+  const newScore: IScoreTypes = {
+    username: req.body.username,
+    score: req.body.score,
+    level: req.body.level,
+  };
+
+  bestScores.push(newScore);
+
+  const client = await pool.connect()
+  if (client) {
+    console.log('Connected to database');
+    await client.query(`INSERT INTO results (username, score, level) VALUES ('${newScore.username}', '${newScore.score}', '${newScore.level}') ON CONFLICT DO NOTHING;`)
+      .then(() => {
+        res.status(200).send(newScore).end();
+        console.log('New score sent to database');
+        client.release()
+        console.log('Client released');
+      })
+      .catch((err) => {
+        res.status(500).send('Sending error');
+        console.error('Sending error' + err);
+      })
+  } else {
+    res.status(500).send('Connection failed');
+  }
 })
 
 app.listen(port, () => {
