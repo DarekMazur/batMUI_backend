@@ -21,14 +21,6 @@ const corsOptions = {
 app.use(express.json());
 app.use(cors(corsOptions));
 
-app.get('/', (_req, res) => {
-  res.status(200).send('Server is running');
-})
-
-app.get('/api', (_req, res) => {
-  res.status(204).send('Nothing to send');
-})
-
 const bestScores: IScoreTypes[] = []
 
 const getScores = async () => {
@@ -50,14 +42,13 @@ const getScores = async () => {
   }
 }
 
-getScores();
-
 const generateAccessToken = (login: { login: string }) => {
   return jwt.sign(login, process.env.API_TOKEN as string, { expiresIn: TOKEN_EXPIRATION_TIME });
 }
 
 const getFromDatabase = async (table: string, res: Response) => {
   const client = await pool.connect()
+
   if (client) {
     console.log('Connected to database');
     const result = await client.query(`SELECT * FROM ${table}`);
@@ -72,8 +63,17 @@ const getFromDatabase = async (table: string, res: Response) => {
   } else {
     res.status(500).send('Connection failed');
   }
-
 }
+
+getScores();
+
+app.get('/', (_req, res) => {
+  res.status(200).send('Server is running');
+})
+
+app.get('/api', (_req, res) => {
+  res.status(204).send('Nothing to send');
+})
 
 app.get("/api/token", (_req, res) => {
   const temporaryToken = generateAccessToken({ login: process.env.API_USER as string });
