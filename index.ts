@@ -3,7 +3,9 @@ import cors from "cors";
 import * as process from "node:process";
 require('dotenv').config()
 
-import { Pool } from "pg"
+import {pool} from "./client";
+import {IScoreTypes} from "./lib/types";
+import {SCORES_TO_DISPLAY} from "./lib/vars";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -15,20 +17,6 @@ const corsOptions = {
 
 app.use(express.json());
 app.use(cors(corsOptions));
-
-interface IScoreTypes {
-  username: string;
-  score: number;
-  level: string;
-}
-
-export const pool = new Pool({
-  user: process.env.DATABASE_USER || 'postgres',
-  host: process.env.DATABASE_HOST || 'localhost',
-  database: process.env.DATABASE_NAME || 'postgres',
-  password: process.env.DATABASE_PASSWORD || 'postgres',
-  port: Number(process.env.DATABASE_PORT) || 5432,
-})
 
 app.get('/', (_req, res) => {
   res.status(200).send('Server is running');
@@ -93,24 +81,29 @@ app.post('/api/score', async (req, res) => {
     level: req.body.level,
   };
 
-  bestScores.push(newScore);
+  if (newScore.score < SCORES_TO_DISPLAY || req.body.score > bestScores.sort((a, b) => a.score - b.score)[bestScores.length - 1] ) {
+    bestScores.push(newScore);
 
-  const client = await pool.connect()
-  if (client) {
-    console.log('Connected to database');
-    await client.query(`INSERT INTO results (username, score, level) VALUES ('${newScore.username}', '${newScore.score}', '${newScore.level}') ON CONFLICT DO NOTHING;`)
-      .then(() => {
-        res.status(200).send(newScore).end();
-        console.log('New score sent to database');
-        client.release()
-        console.log('Client released');
-      })
-      .catch((err) => {
-        res.status(500).send('Sending error');
-        console.error('Sending error' + err);
-      })
+    const client = await pool.connect()
+    if (client) {
+      console.log('Connected to database');
+      await client.query(`INSERT INTO results (username, score, level) VALUES ('${newScore.username}', '${newScore.score}', '${newScore.level}') ON CONFLICT DO NOTHING;`)
+        .then(() => {
+          res.status(200).send(newScore).end();
+          console.log('New score sent to database');
+          client.release()
+          console.log('Client released');
+        })
+        .catch((err) => {
+          res.status(500).send('Sending error');
+          console.error('Sending error' + err);
+        })
+    } else {
+      res.status(500).send('Connection failed');
+    }
   } else {
-    res.status(500).send('Connection failed');
+    console.log('The result is too low to be on the list of the best scores');
+    res.status(403).send('The result is too low to be on the list of the best scores');
   }
 })
 
