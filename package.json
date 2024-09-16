@@ -4,6 +4,8 @@
   "description": "BatQuiz 3.0 backend",
   "main": "index.ts",
   "scripts": {
+    "tsc": "tsc",
+    "start:prod": "node dist/index.js",
     "dev": "nodemon",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
