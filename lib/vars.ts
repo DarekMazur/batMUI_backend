@@ -1,0 +1,1 @@
+export const SCORES_TO_DISPLAY: number = 100
