@@ -168,12 +168,8 @@ app.post('/api/score', async (req, res) => {
   }
 })
 
-var httpServer = http.createServer(app);
-var httpsServer = https.createServer(credentials, app);
+const httpsServer = https.createServer(credentials, app);
 
-httpServer.listen(80, () => {
-  console.log('server started on port 80');
-});
 httpsServer.listen(port, () => {
   console.log(`server started on port ${port}`);
 });
