@@ -70,9 +70,9 @@ npm run start:prod
 
 Here are some of the potential REST API routes (exact routes and payloads would need to be added as per the codebase):
 
-- GET /api/questions: Fetches the list of available quiz questions.
-- POST /api/submit: Submits quiz answers and calculates the score.
-- GET /api/scores: Retrieves the highest scores.
+- GET /quiz/questions: Fetches the list of available quiz questions.
+- POST /quiz/submit: Submits quiz answers and calculates the score.
+- GET /quiz/scores: Retrieves the highest scores.
 
 ## Database
 
