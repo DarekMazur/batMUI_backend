@@ -12,9 +12,11 @@ import {pool} from "./client";
 import {IScoreTypes} from "./lib/types";
 import {SCORES_TO_DISPLAY, TOKEN_EXPIRATION_TIME} from "./lib/vars";
 import jwt from 'jsonwebtoken'
-import * as http from 'node:http';
 
+const privateKey  = fs.readFileSync('/etc/letsencrypt/live/batquiz.nerdistry.pl/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/batquiz.nerdistry.pl/fullchain.pem', 'utf8');
 
+const credentials = {key: privateKey, cert: certificate};
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -166,11 +168,8 @@ app.post('/api/score', async (req, res) => {
   }
 })
 
-const httpServer = http.createServer(app);
-const httpsServer = https.createServer({
-  key: fs.readFileSync('/etc/letsencrypt/live/batquiz.nerdistry.pl/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/batquiz.nerdistry.pl/fullchain.pem'),
-}, app);
+var httpServer = http.createServer(app);
+var httpsServer = https.createServer(credentials, app);
 
 httpServer.listen(80, () => {
   console.log('server started on port 80');

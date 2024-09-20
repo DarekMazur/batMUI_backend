@@ -21,6 +21,9 @@ services:
       - /var/www/batquiz/lib:/opt/app/lib
       - /var/www/batquiz/package.json:/opt/package.json
       - /var/www/batquiz/package-lock.json:/opt/package-lock.json
+      - ./nginx-conf:/etc/nginx/conf.d
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
 
       - /var/www/batquiz/.env:/opt/app/.env
     ports:
