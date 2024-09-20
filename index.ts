@@ -78,7 +78,7 @@ app.get('/api', (_req, res) => {
 app.get("/api/token", (_req, res) => {
   const temporaryToken = generateAccessToken({ login: process.env.API_USER as string });
   if (temporaryToken !== undefined) {
-    res.status(200).send(temporaryToken);
+    res.status(200).send(JSON.stringify(temporaryToken));
   } else {
     res.status(500).send('Connection failed');
   }
