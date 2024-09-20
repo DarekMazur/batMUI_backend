@@ -85,6 +85,7 @@ app.get("/api/token", (_req, res) => {
 })
 
 app.get('/api/questions', async (_req, res) => {
+  console.log('test')
   getFromDatabase('questions', res)
 })
 
