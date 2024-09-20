@@ -3,7 +3,6 @@ import cors from "cors";
 import * as process from "node:process";
 import dotenv from "dotenv";
 import https from 'https'
-import http from 'http'
 import fs from 'fs'
 
 dotenv.config()
@@ -28,6 +27,17 @@ const corsOptions = {
 
 app.use(express.json());
 app.use(cors(corsOptions));
+
+function ensureSecure(req: { secure: any; hostname: string; originalUrl: string; }, res: {
+  redirect: (arg0: string) => void;
+}, next: () => any) {
+  if (req.secure) {
+    return next();
+  }
+  res.redirect('https://' + req.hostname + req.originalUrl);
+}
+
+app.use(ensureSecure);
 
 const bestScores: IScoreTypes[] = []
 
