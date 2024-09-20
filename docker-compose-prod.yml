@@ -22,8 +22,8 @@ services:
       - /var/www/batquiz/package.json:/opt/package.json
       - /var/www/batquiz/package-lock.json:/opt/package-lock.json
       - ./nginx-conf:/etc/nginx/conf.d
-      - /etc/letsencrypt/live/batquiz.nerdistry.pl/privkey.pem:/etc/letsencrypt/live/batquiz.nerdistry.pl/privkey.pem
-      - /etc/letsencrypt/live/batquiz.nerdistry.pl/fullchain.pem:/etc/letsencrypt/live/batquiz.nerdistry.pl/fullchain.pem
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/lib/letsencrypt:/var/lib/letsencrypt
 
       - /var/www/batquiz/.env:/opt/app/.env
     ports:
