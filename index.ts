@@ -2,6 +2,9 @@ import express, {Response} from "express";
 import cors from "cors";
 import * as process from "node:process";
 import dotenv from "dotenv";
+import https from 'https'
+import http from 'http'
+import fs from 'fs'
 
 dotenv.config()
 
@@ -9,6 +12,9 @@ import {pool} from "./client";
 import {IScoreTypes} from "./lib/types";
 import {SCORES_TO_DISPLAY, TOKEN_EXPIRATION_TIME} from "./lib/vars";
 import jwt from 'jsonwebtoken'
+import * as http from 'node:http';
+
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -160,6 +166,15 @@ app.post('/api/score', async (req, res) => {
   }
 })
 
-app.listen(port, () => {
+const httpServer = http.createServer(app);
+const httpsServer = https.createServer({
+  key: fs.readFileSync('/etc/letsencrypt/live/batquiz.nerdistry.pl/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/batquiz.nerdistry.pl/fullchain.pem'),
+}, app);
+
+httpServer.listen(80, () => {
+  console.log('server started on port 80');
+});
+httpsServer.listen(port, () => {
   console.log(`server started on port ${port}`);
 });
