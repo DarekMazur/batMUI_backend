@@ -1,0 +1,34 @@
+version: '3.9'
+services:
+  batquiz:
+    container_name: batquiz
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bat-mui-server:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      API_TOKEN: ${API_TOKEN}
+      API_USER: ${API_USER}
+      NODE_ENV: ${NODE_ENV}
+    volumes:
+      - ./lib:/opt/app/lib
+      - ./package.json:/opt/package.json
+      - ./package-lock.json:/opt/package-lock.json
+
+      - ./.env:/opt/app/.env
+    ports:
+      - '1337:3000'
+    networks:
+      - strapi
+
+networks:
+  strapi:
+    name: ${DATABASE_NETWORK}
+    external: true
