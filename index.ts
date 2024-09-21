@@ -12,8 +12,8 @@ import {IScoreTypes} from "./lib/types";
 import {SCORES_TO_DISPLAY, TOKEN_EXPIRATION_TIME} from "./lib/vars";
 import jwt from 'jsonwebtoken'
 
-const privateKey  = fs.readFileSync('/etc/letsencrypt/live/batquiz.nerdistry.pl/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/batquiz.nerdistry.pl/fullchain.pem', 'utf8');
+const privateKey  = fs.readFileSync(`${process.env.CERT_NAME}/privkey.pem`, 'utf8');
+const certificate = fs.readFileSync(`${process.env.CERT_NAME}/fullchain.pem`, 'utf8');
 
 const credentials = {key: privateKey, cert: certificate};
 

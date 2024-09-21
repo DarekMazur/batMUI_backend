@@ -23,5 +23,6 @@ jobs:
           script: |
             cd /var/www/batquiz
             git pull
-            docker compose -f docker-compose-prod.yml up -d --force-recreate --build
-            docker system prune -f
+            npm run tsc
+            sudo docker compose -f docker-compose-prod.yml up -d --force-recreate --build
+            udo docker system prune -f
