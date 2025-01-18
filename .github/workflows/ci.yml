@@ -25,4 +25,4 @@ jobs:
             git pull
             npm run tsc
             sudo docker compose -f docker-compose-prod.yml up -d --force-recreate --build
-            udo docker system prune -f
+            sudo docker system prune -f

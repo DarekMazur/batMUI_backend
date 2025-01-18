@@ -25,8 +25,8 @@ This repository contains the backend code for BatQuiz 3.0. It is a Node.js appli
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/DarekMazur/batMUI_backend.git
-cd batMUI_backend
+git clone https://github.com/DarekMazur/kgs_backend.git
+cd kgs_backend
 ```
 
 2. Install dependencies:
