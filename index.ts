@@ -2,8 +2,8 @@ import express, {Response} from "express";
 import cors from "cors";
 import * as process from "node:process";
 import dotenv from "dotenv";
-import https from 'https'
-import fs from 'fs'
+// import https from 'https'
+// import fs from 'fs'
 
 dotenv.config()
 
@@ -12,10 +12,10 @@ import {IScoreTypes} from "./lib/types";
 import {SCORES_TO_DISPLAY, TOKEN_EXPIRATION_TIME} from "./lib/vars";
 import jwt from 'jsonwebtoken'
 
-const privateKey  = fs.readFileSync(`${process.env.CERT_NAME}/privkey.pem`, 'utf8');
-const certificate = fs.readFileSync(`${process.env.CERT_NAME}/fullchain.pem`, 'utf8');
+// const privateKey  = fs.readFileSync(`${process.env.CERT_NAME}/privkey.pem`, 'utf8');
+// const certificate = fs.readFileSync(`${process.env.CERT_NAME}/fullchain.pem`, 'utf8');
 
-const credentials = {key: privateKey, cert: certificate};
+// const credentials = {key: privateKey, cert: certificate};
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -28,16 +28,16 @@ const corsOptions = {
 app.use(express.json());
 app.use(cors(corsOptions));
 
-function ensureSecure(req: { secure: any; hostname: string; originalUrl: string; }, res: {
-  redirect: (arg0: string) => void;
-}, next: () => any) {
-  if (req.secure) {
-    return next();
-  }
-  res.redirect('https://' + req.hostname + req.originalUrl);
-}
-
-app.use(ensureSecure);
+// function ensureSecure(req: { secure: any; hostname: string; originalUrl: string; }, res: {
+//   redirect: (arg0: string) => void;
+// }, next: () => any) {
+//   if (req.secure) {
+//     return next();
+//   }
+//   res.redirect('https://' + req.hostname + req.originalUrl);
+// }
+//
+// app.use(ensureSecure);
 
 const bestScores: IScoreTypes[] = []
 
@@ -178,8 +178,12 @@ app.post('/api/score', async (req, res) => {
   }
 })
 
-const httpsServer = https.createServer(credentials, app);
+// const httpsServer = https.createServer(credentials, app);
+//
+// httpsServer.listen(port, () => {
+//   console.log(`server started on port ${port}`);
+// });
 
-httpsServer.listen(port, () => {
-  console.log(`server started on port ${port}`);
+app.listen(port, () => {
+  console.log(`Server started on port ${port} (HTTP - behind Proxy)`);
 });
