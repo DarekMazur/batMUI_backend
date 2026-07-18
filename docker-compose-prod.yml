@@ -35,3 +35,5 @@ networks:
   strapi:
     name: ${DATABASE_NETWORK}
     external: true
+  nginx-proxy-manager_default:
+    external: true
