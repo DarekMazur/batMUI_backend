@@ -21,12 +21,7 @@ services:
       - /var/www/batquiz/lib:/opt/app/lib
       - /var/www/batquiz/package.json:/opt/package.json
       - /var/www/batquiz/package-lock.json:/opt/package-lock.json
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      - ./nginx-conf:/etc/nginx/conf.d
-
       - /var/www/batquiz/.env:/opt/app/.env
-    ports:
-      - '127.0.0.1:1337:3000'
     networks:
       - strapi
       - nginx-proxy-manager_default
