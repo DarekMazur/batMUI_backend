@@ -134,42 +134,51 @@ app.post('/api/score', async (req, res) => {
             time: req.body.time,
             level: req.body.level,
           };
-            bestScores.push(newScore);
 
-            const lowestScoreOnList = bestScores.sort((a, b) => {
-              if (a.score < b.score) {
-                return 1;
-              } else if (a.score > b.score) {
-                return -1
+          bestScores.push(newScore);
+
+          bestScores.sort((a, b) => {
+            if (a.score < b.score) return 1;
+            if (a.score > b.score) return -1;
+            return a.time - b.time;
+          });
+
+          const client = await pool.connect();
+          if (client) {
+            console.log('Connected to database');
+
+            try {
+              if (bestScores.length > SCORES_TO_DISPLAY) {
+                const lowestScoreOnList = bestScores.pop();
+
+                if (lowestScoreOnList && lowestScoreOnList.id) {
+                  await client.query(`DELETE FROM results WHERE id=($1)::uuid`, [
+                    lowestScoreOnList.id
+                  ]);
+                }
               }
 
-              return a.time - b.time;
-            })[bestScores.length - 1]
-
-            const client = await pool.connect()
-            if (client) {
-              console.log('Connected to database');
-              console.log(lowestScoreOnList.id)
-              await client.query(`DELETE FROM results WHERE id=($1)::uuid`, [
-                lowestScoreOnList.id
-              ])
-              await client.query(
-                `INSERT INTO results (username, score, level, time) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING;`,
+              const insertResult = await client.query(
+                `INSERT INTO results (username, score, level, time) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING RETURNING id;`,
                 [newScore.username, newScore.score, newScore.level, newScore.time]
-              )
-                .then(() => {
-                  res.status(200).send(newScore).end();
-                  console.log('New score sent to database');
-                  client.release();
-                  console.log('Client released');
-                })
-                .catch((err) => {
-                  res.status(500).send('Sending error');
-                  console.error('Sending error: ' + err);
-                });
-            } else {
-              res.status(500).send('Connection failed');
+              );
+
+              if (insertResult.rows && insertResult.rows.length > 0) {
+                newScore.id = insertResult.rows[0].id;
+              }
+
+              res.status(200).send(newScore).end();
+              console.log('New score sent to database');
+            } catch (err) {
+              res.status(500).send('Sending error');
+              console.error('Sending error: ' + err);
+            } finally {
+              client.release();
+              console.log('Client released');
             }
+          } else {
+            res.status(500).send('Connection failed');
+          }
         }
       }
     } catch(err) {
