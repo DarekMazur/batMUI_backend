@@ -1,0 +1,19 @@
+# database
+DATABASE_USER=postgres_user
+DATABASE_HOST=postgres_host
+DATABASE_NAME=postgres_database_name
+DATABASE_PASSWORD='postgres_user_password'
+DATABASE_PORT=database_port
+
+#app
+API_TOKEN='app_api_token'
+API_USER='app_admin_name'
+PORT=app_port
+ORIGIN=CORS_origin
+
+# docker
+NODE_ENV=develop/production
+DATABASE_NETWORK=docker_network
+DATABASE_NETWORK_NAME=docker_network_name
+NGINX_NETWORK=nginx_proxy_manager_network /production only
+APP_PATH=app_path /production only
