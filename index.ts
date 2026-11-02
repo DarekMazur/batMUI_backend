@@ -153,17 +153,20 @@ app.post('/api/score', async (req, res) => {
               await client.query(`DELETE FROM results WHERE id=($1)::uuid`, [
                 lowestScoreOnList.id
               ])
-              await client.query(`INSERT INTO results (username, score, level, time) VALUES ('${newScore.username}', '${newScore.score}', '${newScore.level}', '${newScore.time}') ON CONFLICT DO NOTHING;`)
+              await client.query(
+                `INSERT INTO results (username, score, level, time) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING;`,
+                [newScore.username, newScore.score, newScore.level, newScore.time]
+              )
                 .then(() => {
                   res.status(200).send(newScore).end();
                   console.log('New score sent to database');
-                  client.release()
+                  client.release();
                   console.log('Client released');
                 })
                 .catch((err) => {
                   res.status(500).send('Sending error');
-                  console.error('Sending error' + err);
-                })
+                  console.error('Sending error: ' + err);
+                });
             } else {
               res.status(500).send('Connection failed');
             }
