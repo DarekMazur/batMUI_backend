@@ -8,27 +8,28 @@ services:
     image: bat-mui-server:latest
     restart: unless-stopped
     env_file: .env
-    environment:
-      DATABASE_HOST: ${DATABASE_HOST}
-      DATABASE_NAME: ${DATABASE_NAME}
-      DATABASE_USER: ${DATABASE_USER}
-      DATABASE_PORT: ${DATABASE_PORT}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      API_TOKEN: ${API_TOKEN}
-      API_USER: ${API_USER}
-      NODE_ENV: ${NODE_ENV}
+    #    environment:
+    #      DATABASE_HOST: ${DATABASE_HOST}
+    #      DATABASE_NAME: ${DATABASE_NAME}
+    #      DATABASE_USER: ${DATABASE_USER}
+    #      DATABASE_PORT: ${DATABASE_PORT}
+    #      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+    #      API_TOKEN: ${API_TOKEN}
+    #      API_USER: ${API_USER}
+    #      NODE_ENV: ${NODE_ENV}
     volumes:
-      - /var/www/batquiz/lib:/opt/app/lib
-      - /var/www/batquiz/package.json:/opt/package.json
-      - /var/www/batquiz/package-lock.json:/opt/package-lock.json
-      - /var/www/batquiz/.env:/opt/app/.env
+      - ${APP_PATH}/lib:/opt/app/lib
+      - ${APP_PATH}/package.json:/opt/package.json
+      - ${APP_PATH}/package-lock.json:/opt/package-lock.json
+      - ${APP_PATH}/.env:/opt/app/.env
     networks:
-      - strapi
-      - nginx-proxy-manager_default
+      - db_network
+      - nginx_network
 
 networks:
-  strapi:
-    name: ${DATABASE_NETWORK}
+  db_network:
+    name: ${DATABASE_NETWORK_NAME}
     external: true
-  nginx-proxy-manager_default:
+  nginx_network:
+    name: ${NGINX_NETWORK}
     external: true
